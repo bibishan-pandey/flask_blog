@@ -3,7 +3,7 @@
   padding: 10px 20px;
   border: 1px solid #dddddd;
   border-radius: 3px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .article-title {
@@ -43,10 +43,9 @@ a.article-title:hover {
 }
 
 .account-img {
-  height: 125px;
-  width: 125px;
-  margin-right: 20px;
-  margin-bottom: 16px;
+  height: 95px;
+  width: 95px;
+  margin-right: 16px;
 }
 
 .account-heading {
