@@ -1,8 +1,6 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-    <h1 class="mt-2 mb-2">Home Page</h1>
-    <hr>
     {% for post in posts %}
     <h4>{{ post.title }}</h2>
     <p>By {{ post.author }} on {{ post.date_posted }}</p>
