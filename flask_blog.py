@@ -1,5 +1,9 @@
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template, url_for, flash, redirect
+from forms import SignUpForm, SignInForm
+
 app = Flask(__name__)
+
+app.config['SECRET_KEY'] = 'c9e0b61b4e5c7f750d66180cdbf893d5'
 
 posts = [
     {
@@ -30,6 +34,26 @@ def home():
 @app.route("/about")
 def about():
     return render_template('about.html', title = 'About')
+
+@app.route("/signup", methods = ['GET', 'POST'])
+def signup():
+    form = SignUpForm()
+    if form.validate_on_submit():
+        flash(f'Account created for { form.username.data }!', 'success')
+        return redirect(url_for('home'))
+    return render_template('signup.html', title = 'Sign Up', form=form)
+
+@app.route("/signin", methods = ['GET', 'POST'])
+def signin():
+    form = SignInForm()
+    if form.validate_on_submit():
+        # fake data to check the sign in process
+        if form.email.data == 'admin@blog.com' and form.password.data == 'password':
+            flash(f'Sign in successful for { form.email.data }!', 'success')
+            return redirect(url_for('home'))
+        else:
+            flash(f'Sign in unsuccessful! Please check your credentials!', 'danger')        
+    return render_template('signin.html', title = 'Sign In', form=form)
 
 if __name__=='__main__':
     app.run(debug=True)
