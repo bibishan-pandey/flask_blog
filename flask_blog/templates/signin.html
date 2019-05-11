@@ -39,10 +39,10 @@
             </fieldset>
             <div class="form-group">
                 {{ form.submit(class="btn btn-outline-success") }}
+                <small class="text-muted">
+                    <a class="btn btn-sm text-info" href="{{ url_for('reset_request') }}">Forgot Password?</a>
+                </small>
             </div>
-            <small class="text-muted">
-                <a href="#">Forgot Password?</a>
-            </small>
         </form>
     </div>
     <div class="border-top pt-3 mb-5">

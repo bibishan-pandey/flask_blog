@@ -69,3 +69,23 @@ class PostForm(FlaskForm):
     def validate_content(self, content):
         if content.data == '':
             raise ValidationError('Content is required!')
+
+class RequestResetForm(FlaskForm):
+    email = StringField('Email', validators=[Email()])
+    submit = SubmitField('Request Password Reset')
+
+    # custom validation
+    def validate_email(self, email):
+        if email.data == '':
+            raise ValidationError('Email is required!')
+    
+    def validate_email(self, email):
+        email = User.query.filter_by(email=email.data).first()
+        if email is None:
+            raise ValidationError('Account does not exist! Please sign up first.')
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField('Password', validators=[Length(min=8, max=20)])
+    confirm_password = PasswordField('Confirm Password', validators=[Length(min=8, max=20), EqualTo('password')])
+
+    submit = SubmitField('Reset Password')
