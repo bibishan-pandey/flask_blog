@@ -1,36 +1,37 @@
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, abort
 from flask_blog import app, db, bcrypt
-from flask_blog.forms import SignUpForm, SignInForm, UpdateAccountForm
+from flask_blog.forms import SignUpForm, SignInForm, UpdateAccountForm, PostForm
 from flask_blog.models import User, Post
 from flask_login import login_user, current_user, logout_user, login_required
 from PIL import Image
 import secrets, os
 
 # dummy data
-posts = [
-    {
-        'author': 'Bibishan Pandey',
-        'title': 'First Blog Post',
-        'content': 'First Post Content',
-        'date_posted': 'May 4, 2019'
-    },
-    {
-        'author': 'John Doe',
-        'title': 'Second Blog Post',
-        'content': 'Second Post Content',
-        'date_posted': 'May 5, 2019'
-    },
-    {
-        'author': 'Natsu Dragneel',
-        'title': 'Third Blog Post',
-        'content': 'Third Post Content',
-        'date_posted': 'May 6, 2019'
-    }
-]
+# posts = [
+#     {
+#         'author': 'Bibishan Pandey',
+#         'title': 'First Blog Post',
+#         'content': 'First Post Content',
+#         'date_posted': 'May 4, 2019'
+#     },
+#     {
+#         'author': 'John Doe',
+#         'title': 'Second Blog Post',
+#         'content': 'Second Post Content',
+#         'date_posted': 'May 5, 2019'
+#     },
+#     {
+#         'author': 'Natsu Dragneel',
+#         'title': 'Third Blog Post',
+#         'content': 'Third Post Content',
+#         'date_posted': 'May 6, 2019'
+#     }
+# ]
 
 @app.route("/")
 @app.route("/home")
 def home():
+    posts = Post.query.all()
     return render_template('home.html', posts = posts)
 
 @app.route("/about")
@@ -111,3 +112,49 @@ def save_picture(form_picture):
     i.save(picture_path)
 
     return picture_fn
+
+@app.route("/post/new", methods = ['GET', 'POST'])
+@login_required
+def new_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(title=form.title.data, content=form.content.data, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash(f'Posted successfully!', 'success')
+        return redirect(url_for('home'))
+    return render_template('create_post.html', title = 'New Post', form = form, legend = 'New Post')
+
+@app.route("/post/<int:post_id>")
+def post(post_id):
+    post = Post.query.get_or_404(post_id)
+    return render_template('post.html', title = post.title, post = post)
+
+@app.route("/post/<int:post_id>/update", methods = ['GET', 'POST'])
+@login_required
+def update_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(403)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.content = form.content.data
+        db.session.commit()
+        flash(f'Post updated!', 'success')
+        return redirect(url_for('post', post_id = post.id))
+    elif request.method == 'GET':
+        form.title.data = post.title
+        form.content.data = post.content
+    return render_template('create_post.html', title = 'Update Post', form = form, legend = 'Update Post')
+
+@app.route("/post/<int:post_id>/delete", methods = ['POST'])
+@login_required
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(403)
+    db.session.delete(post)
+    db.session.commit()
+    flash(f'Post deleted!', 'success')
+    return redirect(url_for('home'))
