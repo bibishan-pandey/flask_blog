@@ -1,8 +1,8 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from flask_login import current_user
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
+from flask_login import current_user
 from flask_blog.models import User
 
 class SignUpForm(FlaskForm):
@@ -55,32 +55,15 @@ class UpdateAccountForm(FlaskForm):
             if email:
                 raise ValidationError('That email is taken!')
 
-class PostForm(FlaskForm):
-    title = StringField('Title')
-    content = TextAreaField('Content')
-
-    submit = SubmitField('Post')
-
-    # custom validation
-    def validate_title(self, title):
-        if title.data == '':
-            raise ValidationError('Title is required!')
-    
-    def validate_content(self, content):
-        if content.data == '':
-            raise ValidationError('Content is required!')
-
 class RequestResetForm(FlaskForm):
     email = StringField('Email', validators=[Email()])
     submit = SubmitField('Request Password Reset')
 
     # custom validation
     def validate_email(self, email):
+        email = User.query.filter_by(email=email.data).first()
         if email.data == '':
             raise ValidationError('Email is required!')
-    
-    def validate_email(self, email):
-        email = User.query.filter_by(email=email.data).first()
         if email is None:
             raise ValidationError('Account does not exist! Please sign up first.')
 
